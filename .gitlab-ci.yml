@@ -28,16 +28,13 @@ build_image:
 deploy:
   stage: deploy
   before_script:
-    - apt-get update && apt-get install -y openssh-client
-    - apt-get -y install sudo
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    - echo "$AWS_SSH_KEY" > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    - chmod 400 $AWS_SSH_KEY
+    - apt-get update &&  apt-get -y install sudo
+    - sudo apt-get install snapd && sudo snap install notes
+    - sudo apt-get update
   script:
     - |
-      ssh ubuntu@$AWS_EC2_HOST "
+      ssh -o StrictHostKeyChecking=no -i $AWS_SSH_KEY $AWS_EC2_HOST "
         # Pull latest Docker image
         docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
         docker pull $CI_REGISTRY_USER/$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
