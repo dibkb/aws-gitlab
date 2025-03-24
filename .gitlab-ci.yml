@@ -27,18 +27,24 @@ build_image:
 
 deploy:
   stage: deploy
+  variables:
+    SSH_USER: "ubuntu"
   before_script:
-    - apt-get update && apt-get install -y --no-install-recommends openssh-client #
+    # Install required packages
+    - apt-get update && apt-get install -y --no-install-recommends openssh-client
+    # Configure SSH
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    # Write the SSH key to a file (use `-f` if variable is type=File)
+    # Add EC2 host to known_hosts (more secure than disabling checks)
+    - ssh-keyscan -H $AWS_EC2_HOST >> ~/.ssh/known_hosts
+    # Write SSH key
     - echo "$AWS_SSH_KEY" > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
-    # Disable host key checking (optional for CI)
-    - echo -e "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile /dev/null" > ~/.ssh/con
+    # Optional: Configure SSH client (timeout settings)
+    - echo -e "Host $AWS_EC2_HOST\n\tConnectTimeout 30\n\tServerAliveInterval 60" > ~/.ssh/config
   script:
     - |
-      ssh -T -i ~/.ssh/id_rsa ubuntu@ec2-43-204-47-117.ap-south-1.compute.amazonaws.com << 'EOF'
+      ssh -i ~/.ssh/id_rsa $SSH_USER@$AWS_EC2_HOST << 'EOF'
         # Pull latest image (no need to login every time; credentials are in ~/.docker/config.json)
         docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
 
