@@ -29,6 +29,8 @@ deploy:
   stage: deploy
   before_script:
     # Install required packages
+    - echo "AWS_SSH_KEY: $AWS_SSH_KEY"
+    - echo "Length of AWS_SSH_KEY: ${#AWS_SSH_KEY}"
     - chmod 400 $AWS_SSH_KEY
     - apt-get update &&  apt-get -y install sudo
     - sudo apt-get install snapd && sudo snap install notes
