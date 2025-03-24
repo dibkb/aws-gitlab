@@ -6,7 +6,6 @@
 #   DOCKER_USER: dibkb
 #   DOCKER_IMAGE: docker-aws
 #   IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-#   # dckr_pat_Ak7colK_lGWkMKtv2HLLM37Kt8E
 
 # stages:
 #   - test
