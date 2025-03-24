@@ -29,7 +29,8 @@ deploy:
   stage: deploy
   before_script:
     # Install required packages
-    - echo "AWS_SSH_KEY: $AWS_SSH_KEY"
+    - echo "Checking AWS_SSH_KEY variable..."
+    - if [ -z "$AWS_SSH_KEY" ]; then echo "ERROR: AWS_SSH_KEY is empty"; exit 1; else echo "AWS_SSH_KEY is set and not empty"; fi
     - echo "Length of AWS_SSH_KEY: ${#AWS_SSH_KEY}"
     - chmod 400 $AWS_SSH_KEY
     - apt-get update &&  apt-get -y install sudo
