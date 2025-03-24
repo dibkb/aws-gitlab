@@ -37,7 +37,7 @@ deploy:
     - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
   script:
     - |
-      ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa $AWS_EC2_HOST "
+      ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@ec2-43-204-47-117.ap-south-1.compute.amazonaws.com "
         # Pull latest Docker image
         docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
         docker pull $CI_REGISTRY_USER/$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
