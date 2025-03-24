@@ -27,8 +27,6 @@ build_image:
 
 deploy:
   stage: deploy
-  variables:
-    SSH_USER: "ubuntu"
   before_script:
     # Install required packages
     - chmod 400 $AWS_SSH_KEY
