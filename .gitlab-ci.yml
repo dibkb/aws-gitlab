@@ -35,8 +35,12 @@ deploy:
     # Configure SSH
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    # Add EC2 host to known_hosts (more secure than disabling checks)
-    - ssh-keyscan -H $AWS_EC2_HOST >> ~/.ssh/known_hosts
+    # Add EC2 host to known_hosts with verbose output and error checking
+    - |
+      if ! ssh-keyscan -v -H $AWS_EC2_HOST >> ~/.ssh/known_hosts; then
+        echo "Failed to scan SSH host keys. Check if AWS_EC2_HOST is correctly set and the instance is running."
+        exit 1
+      fi
     # Write SSH key
     - echo "$AWS_SSH_KEY" > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
@@ -60,11 +64,7 @@ deploy:
           --name fastapi-app \
           -p 8000:8090 \
           --restart unless-stopped \
-          -e APP_ENV=prod \
-          -e DATABASE_URL="$PROD_DB_URL" \
-          --health-cmd="curl --fail http://localhost:8090/health || exit 1" \
-          --health-interval=30s \
-          $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+          $CI_REGISTRY_USER/$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
 
         # Clean up unused images (avoid pruning everything!)
         docker image prune -af --filter "until=24h"
