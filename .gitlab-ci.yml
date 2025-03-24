@@ -4,7 +4,7 @@ variables:
   AWS_EC2_HOST: $AWS_EC2_HOST
   AWS_SSH_KEY: $AWS_SSH_KEY
   IMAGE_TAG: $CI_REGISTRY_USER/$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-
+  IMAGE_NAME: $CI_REGISTRY_USER/$CI_REGISTRY_IMAGE
 stages:
   - test
   - build
@@ -15,16 +15,16 @@ build_image:
   image: docker:latest
   services:
     - docker:dind
-  before_script:
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - docker build -t $IMAGE_TAG .
-    - docker tag $IMAGE_TAG $CI_REGISTRY_USER/$CI_REGISTRY_IMAGE:latest
+    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+  # script:
+  #   - docker build -t $IMAGE_TAG .
+  #   - docker tag $IMAGE_TAG $CI_REGISTRY_USER/$CI_REGISTRY_IMAGE:latest
 
-    - docker push $IMAGE_TAG
-    - docker push $CI_REGISTRY_USER/$CI_REGISTRY_IMAGE:latest
-  only:
-    - prod
+  #   - docker push $IMAGE_TAG
+  #   - docker push $CI_REGISTRY_USER/$CI_REGISTRY_IMAGE:latest
+  # only:
+  #   - prod
 # deploy:
 #   stage: deploy
 #   before_script:
