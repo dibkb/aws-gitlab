@@ -24,7 +24,7 @@ build_image:
     - docker push $IMAGE_TAG
     - docker push $CI_REGISTRY_USER/$CI_REGISTRY_IMAGE:latest
   only:
-    - main
+    - prod
 # deploy:
 #   stage: deploy
 #   before_script:
