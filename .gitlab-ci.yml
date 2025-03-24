@@ -28,33 +28,40 @@ build_image:
 deploy:
   stage: deploy
   before_script:
-    - apt-get update && apt-get install -y openssh-client
-    - apt-get -y install sudo
+    - apk add --no-cache openssh-client # Install SSH client
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
+    # Write the SSH key to a file (use `-f` if variable is type=File)
     - echo "$AWS_SSH_KEY" > ~/.ssh/id_rsa
     - chmod 600 ~/.ssh/id_rsa
-    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+    # Disable host key checking (optional for CI)
+    - echo -e "Host *\n\tStrictHostKeyChecking no\n\tUserKnownHostsFile /dev/null" > ~/.ssh/con
   script:
     - |
-      ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@ec2-43-204-47-117.ap-south-1.compute.amazonaws.com "
-        # Pull latest Docker image
-        docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
-        docker pull $CI_REGISTRY_USER/$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+      ssh -T -i ~/.ssh/id_rsa ec2-user@$AWS_EC2_HOST << 'EOF'
+        # Pull latest image (no need to login every time; credentials are in ~/.docker/config.json)
+        docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
 
-        # Stop and remove existing container if it exists
+        # Stop/remove old container
         docker stop fastapi-app || true
-        docker container rm -f fastapi-app || true
+        docker rm -f fastapi-app || true
 
-        # Run new container
+        # Run new container with:
+        # - Environment variables
+        # - Proper restart policy
+        # - Health checks
         docker run -d \
           --name fastapi-app \
           -p 8000:8090 \
           --restart unless-stopped \
-          $CI_REGISTRY_USER/$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+          -e APP_ENV=prod \
+          -e DATABASE_URL="$PROD_DB_URL" \
+          --health-cmd="curl --fail http://localhost:8090/health || exit 1" \
+          --health-interval=30s \
+          $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
 
-        # Clean up old images
-        docker system prune -f
-      "
+        # Clean up unused images (avoid pruning everything!)
+        docker image prune -af --filter "until=24h"
+      EOF
   only:
     - prod
