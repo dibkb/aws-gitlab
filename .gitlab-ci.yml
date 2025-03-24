@@ -31,8 +31,7 @@ deploy:
     - apt-get update && apt-get -y install sudo openssh-client
     # Install required packages
     - echo "Checking AWS_SSH_KEY variable..."
-    - echo "Length of AWS_SSH_KEY: ${#AWS_SSH_KEY}"
-    - echo "AWS_SSH_KEY: $AWS_SSH_KEY"
+    - echo $AWS_SSH_KEY
 
     - chmod 400 $AWS_SSH_KEY
     - apt-get update &&  apt-get -y install sudo
