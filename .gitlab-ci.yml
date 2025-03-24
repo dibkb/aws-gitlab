@@ -31,24 +31,13 @@ deploy:
     SSH_USER: "ubuntu"
   before_script:
     # Install required packages
-    - apt-get update && apt-get install -y --no-install-recommends openssh-client
-    # Configure SSH
-    - mkdir -p ~/.ssh
-    - chmod 700 ~/.ssh
-    # Add EC2 host to known_hosts with verbose output and error checking
-    - |
-      if ! ssh-keyscan -v -H $AWS_EC2_HOST >> ~/.ssh/known_hosts; then
-        echo "Failed to scan SSH host keys. Check if AWS_EC2_HOST is correctly set and the instance is running."
-        exit 1
-      fi
-    # Write SSH key
-    - echo "$AWS_SSH_KEY" > ~/.ssh/id_rsa
-    - chmod 600 ~/.ssh/id_rsa
-    # Optional: Configure SSH client (timeout settings)
-    - echo -e "Host $AWS_EC2_HOST\n\tConnectTimeout 30\n\tServerAliveInterval 60" > ~/.ssh/config
+    - chmod 400 $AWS_SSH_KEY
+    - apt-get update &&  apt-get -y install sudo
+    - sudo apt-get install snapd && sudo snap install notes
+    - sudo apt-get update
   script:
     - |
-      ssh -i ~/.ssh/id_rsa $SSH_USER@$AWS_EC2_HOST << 'EOF'
+      ssh -o StrictHostKeyChecking=no -i $AWS_SSH_KEY $AWS_EC2_HOST << 'EOF'
         # Pull latest image (no need to login every time; credentials are in ~/.docker/config.json)
         docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
 
