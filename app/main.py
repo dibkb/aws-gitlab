@@ -22,4 +22,4 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return "Final health check"
+    return "Gitlab CI/CD is working"

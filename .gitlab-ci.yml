@@ -31,6 +31,7 @@ deploy:
   image: ubuntu:latest
   before_script:
     - "which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )"
+    - apt-get install -y curl
     - eval $(ssh-agent -s)
     - mkdir -p ~/.ssh
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/test.pem
@@ -55,6 +56,6 @@ deploy:
 
         docker image prune -af --filter 'until=48h' 
       "
-    - curl "https://ec2-gitlab-hello.borborah.xyz/health" | grep "Final health check"
+    - curl "https://ec2-gitlab-hello.borborah.xyz/health" | grep "Gitlab CI/CD is working"
   only:
     - prod
