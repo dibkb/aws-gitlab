@@ -40,11 +40,12 @@ deploy:
     - ssh -v -T -o StrictHostKeyChecking=no -i ~/.ssh/test.pem ubuntu@${EC2_IP} 'exit'
   script:
     - |
-      ssh -T -o StrictHostKeyChecking=no -i ~/.ssh/test.pem ubuntu@${EC2_IP} << EOF
 
-        CI_REGISTRY_USER="dibkb"
-        CI_REGISTRY_IMAGE="docker-aws"
-        CI_COMMIT_REF_SLUG="prod"
+      export CI_REGISTRY_USER="$CI_REGISTRY_USER"
+      export CI_REGISTRY_PASSWORD="$CI_REGISTRY_PASSWORD"
+      export CI_REGISTRY_IMAGE="$CI_REGISTRY_IMAGE"
+      export CI_COMMIT_REF_SLUG="$CI_COMMIT_REF_SLUG"
+      ssh -T -o StrictHostKeyChecking=no -i ~/.ssh/test.pem ubuntu@${EC2_IP} << "EOSSH"
 
         # Pull the image (with explicit variable references)
         docker pull ${CI_REGISTRY_USER}/${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}
@@ -60,8 +61,8 @@ deploy:
           --restart unless-stopped \
           ${CI_REGISTRY_USER}/${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}
 
-        # Clean up old images (keep last 2 versions)
+        # Cleanup
         docker image prune -af --filter "until=48h"
-EOF
+      EOSSH
   only:
     - prod
