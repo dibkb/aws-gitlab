@@ -22,4 +22,4 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return "healthy biatch !!!"
+    return "Final health check"

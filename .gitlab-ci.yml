@@ -55,5 +55,6 @@ deploy:
 
         docker image prune -af --filter 'until=48h' 
       "
+    - curl "https://ec2-gitlab-hello.borborah.xyz/health" | grep "Final health check"
   only:
     - prod
