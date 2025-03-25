@@ -41,20 +41,19 @@ deploy:
   script:
     - |
       ssh -T -o StrictHostKeyChecking=no -i ~/.ssh/test.pem ubuntu@${EC2_IP} << 'EOF'
-        # Pull latest image (no need to login every time; credentials are in ~/.docker/config.json)
+        # Login to Docker registry
+        docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD
+
         docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
 
         # Stop/remove old container
         docker stop fastapi-app || true
         docker rm -f fastapi-app || true
 
-        # Run new container with:
-        # - Environment variables
-        # - Proper restart policy
-        # - Health checks
+        # Run new container with environment variables, restart policy, and health checks
         docker run -d \
           --name fastapi-app \
-          -p 8000:8090 \
+          -p 8090:8090 \
           --restart unless-stopped \
           $CI_REGISTRY_USER/$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
 
