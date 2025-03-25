@@ -35,6 +35,9 @@ deploy:
     - mkdir -p ~/.ssh
     - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/test.pem
     - chmod 600 ~/.ssh/test.pem
+    - head -n 1 ~/.ssh/test.pem
+    - ls -la ~/.ssh/test.pem
+    - ssh -v -T -o StrictHostKeyChecking=no -i ~/.ssh/test.pem ubuntu@${EC2_IP} 'exit'
   script:
     - |
       ssh -T -o StrictHostKeyChecking=no -i ~/.ssh/test.pem ubuntu@${EC2_IP} << 'EOF'
