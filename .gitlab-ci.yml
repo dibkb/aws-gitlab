@@ -40,10 +40,14 @@ deploy:
     - ssh -v -T -o StrictHostKeyChecking=no -i ~/.ssh/test.pem ubuntu@${EC2_IP} 'exit'
   script:
     - |
-      ssh -T -o StrictHostKeyChecking=no -i ~/.ssh/test.pem ubuntu@${EC2_IP} << 'EOF'
+      ssh -T -o StrictHostKeyChecking=no -i ~/.ssh/test.pem ubuntu@${EC2_IP} << EOF
 
-        # Pull the image
-        docker pull "${CI_REGISTRY_USER}/${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}"
+        CI_REGISTRY_USER="dibkb"
+        CI_REGISTRY_IMAGE="docker-aws"
+        CI_COMMIT_REF_SLUG="prod"
+
+        # Pull the image (with explicit variable references)
+        docker pull ${CI_REGISTRY_USER}/${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}
 
         # Stop and remove old container if exists
         docker stop fastapi-app || true
@@ -54,10 +58,10 @@ deploy:
           --name fastapi-app \
           -p 8090:8090 \
           --restart unless-stopped \
-          "${CI_REGISTRY_USER}/${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}"
+          ${CI_REGISTRY_USER}/${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}
 
         # Clean up old images (keep last 2 versions)
         docker image prune -af --filter "until=48h"
-      EOF
+EOF
   only:
     - prod
