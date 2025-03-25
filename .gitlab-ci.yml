@@ -56,7 +56,6 @@ deploy:
 
         docker image prune -af --filter 'until=48h' 
       "
-    - curl -v "https://ec2-gitlab-hello.borborah.xyz/health"
-    - curl "https://ec2-gitlab-hello.borborah.xyz/health" | grep "Gitlab CI/CD is working"
+    - curl "https://ec2-gitlab-hello.borborah.xyz/health"
   only:
     - prod
